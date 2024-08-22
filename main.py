@@ -5,17 +5,14 @@ import os
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
 from datetime import datetime
-from dotenv import load_dotenv
 
 app = Flask(__name__)
 
 # Configuration
-load_dotenv()
-
-db_user = os.getenv('CLOUD_SQL_USERNAME')
-db_password = os.getenv('CLOUD_SQL_PASSWORD')
-db_name = os.getenv('CLOUD_SQL_DATABASE_NAME')
-db_connection_name = os.getenv('CLOUD_SQL_CONNECTION_NAME')
+db_user = '1d'
+db_password = 'Um114020'
+db_name = 'trunk_ladies_db'
+db_connection_name = 'trunkladies-433304:asia-east1:trunkladiesinstance'
 
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
 
