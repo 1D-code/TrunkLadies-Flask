@@ -9,10 +9,10 @@ from datetime import datetime
 app = Flask(__name__)
 
 # Configuration
-db_user = os.environ.get('CLOUD_SQL_USERNAME')
-db_password = os.environ.get('CLOUD_SQL_PASSWORD')
-db_name = os.environ.get('CLOUD_SQL_DATABASE_NAME')
-db_connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
+db_user = '1d'
+db_password = 'Um114020'
+db_name = 'trunk_ladies_db'
+db_connection_name = 'trunkladies-433304:asia-east1:trunkladiesinstance'
 
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
 
