@@ -1,0 +1,88 @@
+<!-- Popup Form Invoice -->
+{% extends "header.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<div id="flashPopup" class="alert alert-{{ category }}">
+    <a href="#" class="close-btn" id="closeFlashPopup">&times;</a>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div id="flashMessages" class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+</div>
+
+
+
+<div class="table-wrapper">
+
+        <section id="overview" class="overview-section">
+            <h2 class="page-title">Overview</h2>
+            <div class="form-row">
+                <div class="card">
+                    <h3 class="card-title">Total Sales</h3>
+                    <p class="card-value">$10,000</p>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Total Orders</h3>
+                    <p class="card-value">500</p>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Average Order Value</h3>
+                    <p class="card-value">$20</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="sales" class="sales-section">
+            <h2 class="page-title">Sales Data</h2>
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th class="table-header">Date</th>
+                        <th class="table-header">Product</th>
+                        <th class="table-header">Quantity</th>
+                        <th class="table-header">Price</th>
+                        <th class="table-header">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="table-cell">2024-08-01</td>
+                        <td class="table-cell">Product A</td>
+                        <td class="table-cell">10</td>
+                        <td class="table-cell">$15</td>
+                        <td class="table-cell">$150</td>
+                    </tr>
+                    <tr>
+                        <td class="table-cell">2024-08-02</td>
+                        <td class="table-cell">Product B</td>
+                        <td class="table-cell">5</td>
+                        <td class="table-cell">$30</td>
+                        <td class="table-cell">$150</td>
+                    </tr>
+                    <!-- More rows as needed -->
+                </tbody>
+            </table>
+        </section>
+
+        <section id="trends" class="trends-section">
+            <h2 class="page-title">Sales Trends</h2>
+            <div class="chart-container">
+                <!-- Embed a chart or graph here -->
+                <img src="chart-placeholder.png" alt="Sales Trends Chart" class="chart-image">
+            </div>
+        </section>
+
+</div>
+
+
+<footer class="footer">
+    <p>&copy; 2024 Sales Dashboard. All rights reserved.</p>
+</footer>
+
+{% endblock %}

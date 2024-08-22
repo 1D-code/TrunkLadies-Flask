@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main-styles.css') }}">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <img src="{{ url_for('static', filename='images/invoice_logo.png') }}" alt="Company Logo">
+            </div>
+            <a href="{{ url_for('index_page') }}" class="{{ 'active' if request.path == url_for('index_page') else '' }}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <div class="submenu">
+                <a href="#" class="submenu-toggle" onclick="toggleDropdown(event)">
+                    <i class="fas fa-file-invoice"></i> Invoice
+                </a>
+                <div class="submenu-content">
+                    <a href="{{ url_for('create_invoice') }}" class="{{ 'active' if request.path == url_for('create_invoice') else '' }}">
+                        <i class="fas fa-plus"></i> Create Invoice
+                    </a>
+                    <a href="{{ url_for('manage_invoice') }}" class="{{ 'active' if request.path == url_for('manage_invoice') else '' }}">
+                        <i class="fas fa-edit"></i> Manage Invoice
+                    </a>
+                </div>
+            </div>
+            <a href="{{ url_for('product_page') }}" class="{{ 'active' if request.path == url_for('product_page') else '' }}">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="{{ url_for('customer_page') }}" class="{{ 'active' if request.path == url_for('customer_page') else '' }}">
+                <i class="fas fa-users"></i> Customer
+            </a>
+            <a href="{{ url_for('users_page') }}" class="{{ 'active' if request.path == url_for('users_page') else '' }}">
+                <i class="fas fa-user"></i> Users
+            </a>
+        </div>
+
+        <div class="header">
+            <span class="user-name"> <img src="{{ url_for('static', filename='images/profiles/' + dp_path) }}" alt="Profile Picture" class="profile-pic">Hello, {{ user_name }}</span>
+            <div>
+                <a href="{{ url_for('logout') }}" class="logout-button">Logout </a>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <div>
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+</body>
+<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</html>

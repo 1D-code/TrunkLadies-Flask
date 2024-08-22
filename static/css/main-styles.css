@@ -1,0 +1,1459 @@
+/* Define color variables */
+:root {
+    --primary-color: #002D40;
+    --secondary-color: #F19CBE;
+    --background-color: #F9F0F0;
+    --accent-color: #FFD9BE;
+}
+
+body {
+    background-color: var(--background-color);
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+.header {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 15px 20px;
+    position: fixed;
+    left: 250px; /* Adjusted to avoid overlap with sidebar */
+    top: 0;
+    width: calc(100% - 250px); /* Adjusted to fit the remaining width */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* If you want to apply it to specific elements */
+.header, .sidebar, .main-content, .table th, .table td {
+    font-family: 'Poppins', sans-serif;
+}
+
+
+.header-left img {
+    max-height: 50px; /* adjust as needed */
+    margin-right: 10px; /* space between logo and title */
+}
+
+.header img {
+    max-height: 50px;
+    margin-right: 10px;
+    border-radius: 50%;
+}
+.header h1 {
+    font-size: 24px;
+    margin: 0;
+}
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.header .user-info {
+    display: flex;
+    align-items: center;
+}
+
+.profile-pic {
+    width: 43px;
+    height: 43px;
+    border-radius: 50%; /* Make it circular */
+    object-fit: cover; /* Ensure the image fits well within the circle */
+    margin-right: 15px;
+}
+
+.user-name {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.header-right .user-name {
+    margin-right: 30px; /* space between text and logout button */
+}
+
+.header-right .logout-button {
+    background-color: transparent;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 10%;
+}
+.header-right .logout-button:hover {
+    background-color: #cc0000;
+}
+.container {
+    display: flex;
+    height: calc(100vh - 70px); /* Adjust height based on the header height */
+    width: 100%;
+    top: 70px; /* Adjust based on the header height */
+    bottom: 0;
+}
+.sidebar {
+    width: 220px;
+    background-color: #2c3e50;
+    padding: 20px 0;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    color: #ecf0f1;
+}
+
+.sidebar a.active {
+    background-color: #f56a79; /* Example color */
+    color: white; /* Example text color */
+}
+
+.sidebar a {
+    display: block;
+    padding: 15px;
+    color: #333;
+    text-decoration: none;
+}
+
+.sidebar a:hover {
+    background-color: #f0f0f0;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #fff;
+    color: #333;
+    height: 100vh;
+    overflow: auto;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    position: relative;
+}
+
+.sidebar a {
+    display: block;
+    padding: 15px;
+    color: #333;
+    text-decoration: none;
+}
+
+.sidebar a:hover {
+    background-color: #f56a79;
+    color: white;
+}
+
+.submenu-content {
+    display: none;
+    padding-left: 20px;
+}
+
+.submenu-content a {
+    padding: 10px;
+    color: #333;
+}
+
+.submenu-content a:hover {
+    background-color: #f56a79;
+}
+
+.submenu-toggle::after {
+    content: '▶'; /* Arrow indicating expandable item */
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+.submenu-content.show {
+    display: block;
+}
+
+.submenu-content.show .submenu-toggle::after {
+    content: '▼'; /* Arrow indicating collapsible item */
+}
+
+.main-content {
+    flex-grow: 1;
+
+}
+
+.overview {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.card {
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 30%;
+    text-align: center;
+    margin: 20px;
+    border-radius: 2%;
+}
+
+.tab-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    align-items: center;
+}
+.tabs {
+    display: flex;
+    gap: 5px;
+}
+.tabs button {
+    padding: 10px 20px;
+    border: none;
+    background-color: rgb(81, 200, 247);
+    cursor: pointer;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+.tabs button.active {
+    background-color: #f56a79;
+    color: white;
+}
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+.action-buttons button, .action-buttons a {
+    padding: 10px 20px;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    text-decoration: none;
+    color: #333;
+}
+.action-buttons button:hover, .action-buttons a:hover {
+    background-color: #e0e0e0;
+}
+.action-buttons .create-invoice {
+    background-color: #f56a79;
+    color: white;
+}
+.action-buttons .create-invoice:hover {
+    background-color: #ff4081;
+}
+#openFormBtn {
+    background-color: skyblue; /* Skyblue background */
+    color: white; /* White text color */
+    padding: 10px 20px; /* Padding */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 16px; /* Font size */
+    font-weight: bold; /* Bold text */
+    transition: background-color 0.3s ease; /* Smooth transition for background color */
+}
+
+/* Button hover effect */
+#openFormBtn:hover {
+    background-color: deepskyblue; /* Darker blue when hovered */
+}
+.table-wrapper {
+    max-height: 630px; /* Adjust this height as needed */
+    overflow-y: auto;
+    overflow-x: auto;
+}
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.table th, .table td {
+    padding: 8px 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+.table th {
+    background-color: #f0f0f0;
+}
+.table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+.status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: white;
+    font-size: 0.9em;
+}
+.status.paid { background-color: green; }
+.status.pending { background-color: orange; }
+.status.overdue { background-color: red; }
+
+/* Popup container */
+.popup {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Popup content */
+.popup-content {
+    background-color: #fefefe;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 25%; /* Adjust based on screen size */
+    top: -100%; /* Start above the viewport */
+    left: 10%;
+    transition: top 0.3s ease; /* Slide down effect */
+}
+
+.popup-content-invoice {
+    background-color: #fefefe;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Adjust based on screen size */
+    overflow: hidden; /* Hide overflow initially */
+    top: -100%; /* Start above the viewport */
+    left: 10%;
+    transition: top 0.3s ease; /* Slide down effect */
+}
+
+.popup.show .popup-content {
+    top: 15%; /* Slide into view */
+    opacity: 1;
+    background-color:#45a049;
+}
+
+.frm-pop {
+    max-width: 500px;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #f9f9f9;
+}
+
+.frm-customer {
+    width: auto;
+    margin: 0 auto 10px auto; /* Adjusted margins */
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #f9f9f9;
+}
+
+.frm-customer label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.frm-customer .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 5px; /* Reduced margin-bottom */
+}
+
+.form-row .action-buttons {
+    margin-left: 15px; /* Reduced margin-bottom */
+}
+
+.form-row .action-buttons a {
+    border-radius: 5%;
+}
+
+.frm-customer .form-col-inv {
+    flex: 1 1 calc(25% - 10px); /* Adjust width and spacing */
+    margin-right: 10px; /* Reduced margin-right */
+}
+
+.frm-customer .form-col-inv:last-child {
+    margin-right: 0;
+}
+
+.frm-customer input,
+.frm-customer select {
+    width: 100%; /* Full width of the column */
+    box-sizing: border-box;
+}
+
+
+/* Close button */
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Form styling */
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+select,
+input[type="date"] {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.button-history {
+    background-color: #ffbb33; /* Skyblue background */
+    color: white; /* White text color */
+    padding: 5px 20px; /* Padding */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 14px; /* Font size */
+    transition: background-color 0.3s ease; /* Smooth transition for background color */
+}
+.button-history:hover {
+    background-color: #ff8800;  /* Darker blue when hovered */
+}
+
+.button-update {
+    background-color: #33b5e5; /* Skyblue background */
+    color: white; /* White text color */
+    padding: 5px 20px; /* Padding */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 14px; /* Font size */
+    transition: background-color 0.3s ease; /* Smooth transition for background color */
+}
+.button-update:hover {
+    background-color: #0099cc;  /* Darker blue when hovered */
+}
+
+.popup-flash {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.popup-content-flash {
+    background-color: #fff;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Center horizontally and vertically */
+    margin: auto;
+}
+
+/* Close button styling */
+.flash-close-btn {
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.flash-close-btn:hover {
+    color: #ff0000; /* Red color on hover */
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.form-row label {
+    flex: 1;
+    font-size: smaller;
+    margin-right: 10px; /* Adjust as needed for spacing */
+}
+
+.form-row label:last-child {
+    margin-right: 0;
+}
+
+.charts {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.chart-card {
+    background: #fff;
+    padding: 20px;
+    margin: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 45%;
+}
+
+.chart {
+    width: 100%;
+    height: 300px;
+    /* Add more styles to position your chart library output */
+}
+
+
+.form-row-search {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.left-side {
+    display: flex;
+    align-items: center;
+}
+
+.left-side label {
+    margin: 0 10px 15px 10px;
+    padding: 3px;
+}
+
+.left-side input[type="text"], input[type="date"], .form-control {
+    margin-right: 10px;
+    flex-grow: 1;
+}
+
+.right-side {
+    display: flex;
+    align-items: center;
+}
+
+.right-side label {
+    margin: 0 10px 15px 15px;
+    padding: 3px;
+}
+
+.right-side input[type="submit"], .form-control {
+    margin-left: 5px;
+    margin-right: 10px;
+    margin-bottom: 15px;
+}
+
+
+/* Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination-btn {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin: 0 5px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.pagination-btn:hover {
+    background-color: #0056b3;
+}
+
+.pagination-info {
+    align-self: center;
+    margin: 0 10px;
+    font-size: 16px;
+}
+
+.pagination-btn:disabled {
+    background-color: #c0c0c0;
+    cursor: not-allowed;
+}
+#clrBtn {
+    display: none;
+    background-color: #0056b3;
+}
+
+.invoice-box {
+    max-width: 1500px;
+    margin: auto;
+    padding: 30px;
+    border: 1px solid #eee;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+    font-size: 16px;
+    line-height: 24px;
+    color: #555;
+}
+
+.invoice-box table {
+    width: 100%;
+    line-height: inherit;
+    text-align: left;
+    border-collapse: collapse;
+}
+
+.invoice-box table td {
+    padding: 5px;
+    vertical-align: top;
+}
+
+.invoice-box table tr td:nth-child(2) {
+    text-align: right;
+}
+
+.invoice-box table tr.top table td {
+    padding-bottom: 20px;
+}
+
+.invoice-box table tr.top table td.title {
+    font-size: 45px;
+    line-height: 45px;
+    color: #333;
+}
+
+.invoice-box table tr.information table td {
+    padding-bottom: 40px;
+}
+
+.invoice-box table tr.heading td {
+    background: #eee;
+    border-bottom: 1px solid #ddd;
+    font-weight: bold;
+    text-align: center;
+}
+
+.invoice-box table tr.details td {
+    padding-bottom: 20px;
+}
+
+.invoice-box table tr.item td {
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+.invoice-box table tr.item.last td {
+    border-bottom: none;
+}
+
+.total {
+    margin-top: 100px; /* Adjust the value as needed */
+    border-top: 1px solid #ddd; /* Optional: adds a border for better separation */
+    padding-top: 10px; /* Optional: adds space above the content */
+}
+
+.td-1{
+     margin-top: 100px;
+}
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; /* 10% from the top */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px; /* Adjust based on screen size */
+    border-radius: 8px;
+    position: relative;
+}
+
+/* Modal Close Button */
+.modal-close {
+    color: #aaa;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Floating Action Button */
+.fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #f56a79; /* Example color */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    font-size: 24px;
+    transition: background-color 0.3s ease;
+}
+
+.fab:hover {
+    background-color: #ff4081; /* Darker pink on hover */
+}
+
+/* Responsive Table */
+@media screen and (max-width: 768px) {
+    .table th, .table td {
+        font-size: 14px;
+        padding: 6px;
+    }
+}
+
+/* Responsive Layout */
+@media screen and (max-width: 600px) {
+    .header h1 {
+        font-size: 20px;
+    }
+    .header img {
+        max-height: 40px;
+    }
+    .container {
+        flex-direction: column;
+        height: auto;
+        top: 0;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+    }
+    .main-content {
+        padding: 10px;
+    }
+    .card {
+        width: 100%;
+        margin: 10px 0;
+    }
+    .chart-card {
+        width: 100%;
+    }
+    .popup-content,
+    .popup-content-invoice {
+        width: 90%;
+        left: 5%;
+    }
+}
+
+.form-inv {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+#invoice_totals{
+    margin-top: 10px;
+    text-align: right;
+}
+#action_create_invoice{
+    margin-left: 50px;
+    margin-top: 30px;
+}
+
+.totals-inv {
+    max-width: 100%;
+    margin: 0 auto 10px auto; /* Center align and adjust margins */
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #f9f9f9;
+}
+
+.totals-row-inv {
+    display: flex;
+    justify-content: flex-start; /* Align items to the left */
+    margin-bottom: 10px; /* Space between rows */
+}
+
+.totals-col-inv {
+    flex: 1; /* Ensure columns take full width */
+    display: flex;
+    justify-content: space-between; /* Space between label and value */
+    align-items: center; /* Vertically align items */
+}
+
+.totals-col-inv strong {
+    margin-right: 10px; /* Space between label and value */
+}
+
+.totals-col-inv span {
+    margin-left: 5px;
+}
+
+.form-group {
+    display: flex;
+    justify-content: center; /* Center the button */
+    margin-top: 20px; /* Space above the button */
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+/* Table Container */
+.table-container-inv {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #f9f9f9;
+}
+
+/* General Table Styling */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Table Headers */
+.table th {
+    padding: 10px;
+    text-align: center;
+    background-color: #f56a79;
+    font-weight: bold;
+    color: #f6f4f1 ;
+}
+
+/* Table Cells */
+.table td {
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Table Rows */
+.table tr {
+    border-bottom: 1px solid #ddd;
+}
+
+/* Input Fields */
+.table input[type="text"], 
+.table input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Button Styles */
+.button-delete {
+    background-color: #FF414D;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+}
+
+/* Button Hover Effect */
+.button-delete:hover {
+    background-color: #f56a79;
+}
+
+/* Aligning the Action Column */
+.action-field {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-content-invoice table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#copyInvoiceBtn{
+    margin-top: 15px;
+}
+.btn-al{
+    margin: 20px;
+}
+
+.btn-frm button{
+    margin: 5px;
+}
+
+#updateInvoiceBtn,
+#saveInvoiceBtn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.nav {
+    background-color: #444;
+    color: #fff;
+    padding: 0.5rem 0;
+}
+
+.nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+}
+
+.nav li {
+    display: inline;
+    margin-right: 1rem;
+}
+
+.nav-link {
+    color: #fff;
+    text-decoration: none;
+}
+
+.main-content {
+    margin-left: 250px; /* Sidebar width */
+    margin-top: 40px; /* Header height */
+    padding: 20px;
+    height: calc(100vh - 70px); /* Adjusted height to avoid overlapping */
+    overflow-y: auto; /* Scrollable content if necessary */
+}
+
+.logout-button {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    color: #e74c3c;
+}
+
+.section-title {
+    margin-top: 0;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.card-title {
+    margin: 0 0 0.5rem 0;
+}
+
+.card-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.sales-section {
+    margin-bottom: 2rem;
+}
+
+.sales-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-header {
+    background-color: #ddd;
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.table-cell {
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.trends-section {
+    margin-bottom: 2rem;
+}
+
+.chart-container {
+    text-align: center;
+}
+
+.chart-image {
+    max-width: 100%;
+    height: auto;
+}
+
+.settings-section {
+    margin-bottom: 2rem;
+}
+
+.settings-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.form-label {
+    display: block;
+    font-weight: bold;
+}
+
+.form-select,
+.form-input,
+.form-button {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.popup-invoice-table-body {
+    text-align: center;
+}
+
+#response {
+    display: none;
+}
+
+#popupFormCustomer {
+    display: none;
+}
+
+/* General popup styling */
+#flashPopup {
+    display: none; /* Hidden by default */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 5%; /* Full height */
+}
+
+/* Close button styling */
+#flashPopup .close-btn {
+    position: absolute;
+    top: 99px; /* Adjusted to align correctly */
+    right: 70px; /* Adjusted to align correctly */
+    font-size: 20px;
+    color: transparent#333;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    z-index: 1000; 
+}
+
+#flashPopup .close-btn:hover {
+    color: #ff0000; /* Red color on hover */
+}
+
+/* Close button styling */
+#closeFormBtnInvoice {
+    position: relative;
+    top: 30px; /* Adjusted to align correctly */
+    right: 5px;
+    margin: 20px;
+    color: transparent#333;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    padding-bottom: 20px;
+    transform: translate(0%, -50%);
+}
+
+#closeFormBtnInvoice:hover {
+    color: #ff0000; /* Red color on hover */
+}
+
+/* Flash messages styling */
+#flashMessages {
+    margin-bottom: 5px; /* Remove extra margins */
+}
+
+/* Visibility transitions */
+#flashPopup.show {
+    display: block;
+}
+
+#flashPopup.hide {
+    display: none;
+}
+
+.pagination-btn {
+    padding: 5px 10px;
+    margin: 5px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    background-color: #007bff;
+    border-radius: 4px;
+}
+
+.pagination-btn.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.selectCustomerBtn {
+    background-color: #f56a79; /* Skyblue background */
+    color: white; /* White text color */
+    padding: 5px 20px; /* Padding */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 12px; /* Font size */
+    transition: background-color 0.3s ease; /* Smooth transition for background color */
+}
+.selectCustomerBtn:hover {
+    background-color: deepskyblue; /* Darker blue when hovered */
+}
+
+.sidebar-logo {
+    text-align: center;
+    margin-bottom: 20px;
+    
+}
+
+.sidebar-logo img {
+    max-width: 100%;
+    height: auto;
+}
+
+.add_row{
+    color: #f6f4f1;
+}
+
+/* login  */
+.login-container {
+    background-color: white;
+    padding: 50px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+    width: 300px;
+}
+.login-container h2 {
+    margin-bottom: 20px;
+}
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.login-container input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #007BFF;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.login-container input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+.alert {
+    padding: 10px;
+    margin-top: 10px;
+    color: white;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.alert.danger {
+    background-color: red;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.popup-content-payment {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 550px;
+    max-width: 90%;
+    margin: auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.popup-content-payment .close-btn{
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 17px;
+    margin-right: 10px;
+}
+
+.popup-content-payment .close-btn:hover,
+.popup-content-payment .close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+.popup-content-payment .frm-pop {
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-content-payment .form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-content-payment label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.popup-content-payment input, select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.popup-content-payment button {
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.popup-content-payment button:hover {
+    background-color: #0056b3;
+}
+
+.frm-details label {
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 5px;
+    width: 150px; /* Fixed width for labels */
+    vertical-align: middle;
+}
+
+.frm-details .form-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    align-items: center; /* Align items in the center */
+}
+
+.frm-details input,
+.frm-details select,
+.frm-details input[type="date"] {
+    box-sizing: border-box;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.frm-details .form-col-inv {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.top-frm .form-row {
+    justify-content: space-between;
+    align-items: center; /* Align items in the center */
+}
+
+.top-frm .form-col-inv {
+    margin-right: 10px;
+}
+
+
+.frm-details .form-col-inv:last-child {
+    margin-right: 0;
+}
+
+#pStat {
+    margin-bottom: 18px;
+    padding: 10px;
+    text-align: center; /* Align text in the center of the box */
+}
+
+.amount-row .totals-col-inv,
+.penalty-row .totals-col-inv,
+.balance-row .totals-col-inv {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.penalty-row strong,
+.balance-row strong {
+    flex: 0 0 330px; /* Fixed width for the label */
+    text-align: left; /* Align label to the left */
+}
+
+.amount-row strong{
+    flex: 0 0 200px; /* Fixed width for the label */
+    text-align: left; /* Align label to the left */
+}
+
+#invoiceNumber {
+    border-radius: 0;
+    border: none;
+    border-bottom: 2px solid red;
+    background-color: transparent;
+    width: 70%;
+    margin-right: 50px;
+}
+
+#invoiceNumber,
+#amountText {
+    border-radius: 0;
+    border: none;
+    border-bottom: 2px solid red;
+    background-color: transparent;
+}
+
+.amount-row input,
+.penalty-row input,
+.balance-row input {
+    flex: 1;
+    text-align: center; /* Align input field to the right */
+    box-sizing: border-box;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-left: 10px; /* Add some spacing between the label and input */
+}
+
+.popup-content-payment textarea {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 12px;
+    resize: none;
+}
+
+.pop-title{
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+
+#other-payment-method {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%; /* Full width to fit its container */
+    box-sizing: border-box;
+    font-size: 12px;
+    display: block; /* Ensure it's visible when enabled */
+}
+
+.amt-price{
+    text-align: right;
+}
+
+.popup-content-invoice .total td:last-child {
+    text-align: left; /* Align price values to the left */
+}
+
+.popup-content-invoice #popup_subtotal_price,
+.popup-content-invoice #popup_dp_price,
+.popup-content-invoice #popup_mp_price,
+.popup-content-invoice #popup_total_price {
+    text-align: left; /* Align text within these span elements to the left */
+}
+
+#payment-method {
+    padding-right: 40px; /* Ensure space for the logo */
+    appearance: none; /* Hide the default dropdown arrow */
+    background-color: white; /* Optional: Set a white background */
+    background-repeat: no-repeat;
+    background-size: 20px;
+    background-position: right 10px center; /* Adjust as needed */
+}
+
+.center-td {
+    text-align: center; /* Centers text horizontally */
+    vertical-align: middle; /* Centers text vertically */
+}
+
+/* combined form */
+
+

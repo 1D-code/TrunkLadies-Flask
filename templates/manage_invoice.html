@@ -1,0 +1,400 @@
+{% extends "header.html" %}
+
+{% block title %}Transactions{% endblock %}
+   
+{% block content %}
+
+<div id="flashPopup" class="alert alert-{{ category }}">
+    <a href="#" class="close-btn" id="closeFlashPopup">&times;</a>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div id="flashMessages" class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+</div>
+
+    <!-- Popup Form Payment-->
+    <div id="popupFormPayment" class="popup">
+        <div class="popup-content-payment">
+            <span class="close-btn" id="closeFormBtnPayment">&times;</span>
+            <div class = "pop-title">
+                <h2>Payments Entry</h2>
+            </div>
+
+            <div id="flashPopup" class="alert alert-{{ category }}">
+                <a href="#" class="close-btn" id="closeFlashPopup">&times;</a>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div id="flashMessages" class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <div class="top-frm">
+                <div class="form-row">
+
+
+                        <input type="text" placeholder="001" id="invoiceNumber" name="invoiceNumber" readonly>
+
+                        <label>Due Date: </label>
+                        <input type="date" id="currdueDate" name="currdueDate" readonly>
+ 
+
+                </div>
+            </div>
+
+            <form class="frm-pop" method="post" action="{{ url_for('pay_order') }}" id="payForm" >
+                <div class="frm-details">
+                    <div class="form-row">
+                        <div class="form-col-inv">
+                            <label for="payDate">Payment Date:</label>
+                            <input type="date" id="payDate" name="payDate" required onchange="setNextDueDate()">
+                        </div>    
+                        <div class="form-col-inv">
+                            <label for="nextdueDate">Next Due Date:</label>
+                            <input type="date" id="nextdueDate" name="nextdueDate" required readonly>
+                        </div> 
+                    </div>
+                    <div class="form-row">
+                     
+                        <label for="payment-method">Payment Method:
+                            <select id="payment-method" name="payment-method" required onchange="updatePaymentMethodIcon(this)">
+                                <option value="Visa" data-icon-url="{{ url_for('static', filename='images/icons/visa.png') }}">Credit Card</option>
+                                <option value="Gcash" data-icon-url="{{ url_for('static', filename='images/icons/gcash.png') }}">PayPal</option>
+                                <option value="Maya" data-icon-url="{{ url_for('static', filename='images/icons/maya.png') }}">Bank Transfer</option>
+                                <option value="Bank Transfer" data-icon-url="{{ url_for('static', filename='images/icons/atm.png') }}">Bank Transfer</option>
+                                <option value="others" >Others</option>
+                            </select>
+                        </label>       
+
+                        
+                            <label for="other-payment-method" id="other-payment-method-label" style="display: none;">Other Payment Method:
+                                <input type="text" id="other-payment-method" name="other-payment-method" placeholder="Specify Payment Method" disabled>
+                            </label>               
+                         
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-col-inv">
+                            <label for="comments">Comments:</label>
+                            <textarea id="comments" name="comments" placeholder="Enter any comments here" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="totals-row-inv amount-row">
+                        <div class="totals-col-inv">
+                            <strong>Amount:</strong>
+                            <input name="pay_amount" id="amountText" placeholder="Input amount here" required>
+                        </div>
+                    </div>
+
+                    <div class="totals-row-inv penalty-row">
+                        <div class="totals-col-inv">
+                            <strong>Penalty:</strong>
+                            <input name="pay_penalty" id="penaltyText" value="0.00" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="totals-row-inv balance-row">
+                        <div class="totals-col-inv">
+                            <strong>Prev Balance:</strong>
+                            <input name="pay_balance" id="balanceText" value="0" readonly>
+                        </div>
+                    </div>
+
+                    <div class="totals-row-inv balance-row">
+                        <div class="totals-col-inv">
+                            <strong>Updated Balance:</strong>
+                            <input name="pay_balance" id="updatedText" value="0" readonly>
+                        </div>
+                    </div>
+        
+                </div>
+
+                    <div class="form-group">
+                        <div class="btn-frm">
+                            <button id="viewInvoiceBtn" class="btn btn-secondary">Open Invoice</button>
+                            <button id="updateInvoiceBtn" type="submit">Submit Payment</button>
+                         </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+<!-- Popup Form Invoice -->
+<div id="popupFormInvoice" class="popup">
+    <div class="popup-content-invoice">
+
+        <span class="close-btn" id="closeFormBtnInvoice">&times;</span>
+
+        <div>
+            <div class="invoice-box" id="invoiceDetails">
+                <table>
+                    <!-- Existing invoice content here -->
+                    <tr class="top">
+                        <td colspan="5">
+                            <table>
+                                <tr>
+                                    <td class="title">
+                                        <img src="{{ url_for('static', filename='images/invoice_logo.png') }}" alt="Company logo" style="width:70%; max-width:200px;">
+                                    </td>
+                                    <td>
+                                        Invoice #: <span id="popup_invoice_id"></span><br>
+                                        Created: <span id="invoicePaymentDate"></span><br>
+                                        Due: <span id="invoiceNextDueDate"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr class="information">
+                        <td colspan="5">
+                            <table>
+                                <tr>
+                                    <td>
+                                        The Trunk Ladies<br>
+                                        Buy, Sell, Consign, Layaway, Authenticate<br>
+                                        Manila, Philippines, 1700
+                                    </td>
+                                    <td>
+                                        <span id="popup_customer_name"></span><br>
+                                        <span id="popup_customer_address"></span><br>
+                                        <span id="popup_customer_email"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr class="heading">
+                        <td>ITEM</td>
+                        <td>BRAND</td>
+                        <td>DESCRIPTION</td>
+                        <td>QUANTITY</td>
+                        <td>PRICE</td>
+                    </tr>
+                    <tbody id="popupInvoiceTableBody" class="popup-invoice-table-body"></tbody>
+                    <tr> </tr>
+                    <tr class="total">
+                        <td colspan="5" style="margin-top:20px;">
+
+                            <strong>Balance: <span id="invoiceBalance"></span></strong><br>
+                            <strong>Penalty: <span id="invoicePenalty"></span></strong><br>
+                            <strong>Payment: <span id="invoiceAmount"></span></strong><br>
+                            <strong>Updated Balance: <span id="invoiceUpdatedBalance"></span></strong>
+
+                        </td>
+                    </tr>
+                    <tr class="terms-and-conditions">
+                        <td colspan="6" class="align-left">
+                            <strong>Terms and Conditions:</strong><br>
+                            <p id="popup_terms_conditions">
+                                <!-- Your terms and conditions text here -->
+                                These are the terms and conditions for this invoice. Please read carefully...
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="form-row">
+                <button id="copyInvoiceBtn" class="btn btn-secondary">Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="page-title">Manage Invoice</h2>
+
+<div class="form-container">
+    <form id="search-form" method="POST" action="{{ url_for('manage_invoice') }}">
+        <div class="form-row-search">
+            <div class="left-side">
+                <label for="customer-tranx">Customer:</label>
+                <input type="text" id="customer-tranx" name="customer-tranx" placeholder="IG/FB Name" value="{{ search_customer }}">
+                <label for="date-picker-from">From:</label>
+                <input type="date" id="date-picker-from" name="from-date-picker" value="{{ search_from_date or today_date }}">
+                <label for="date-picker-to">To:</label>
+                <input type="date" id="date-picker-to" name="to-date-picker" value="{{ search_to_date or today_date }}">
+            </div>
+            <div class="right-side">
+                <input id="srchBtn" type="submit" value="Search">
+                <input id="clrBtn" type="submit" name="clear_button" value="Clear" style="display: none;">
+            </div>
+        </div>
+    </form>
+    <div id="search-results"></div>
+</div>
+
+    <div class="tab-container">
+        <div class="tabs">
+            <button class="tab-link active" onclick="showTab('all')">All Invoice ({{ cnt.total_orders or 0}})</button>
+            <button class="tab-link" onclick="showTab('paid')">Paid ({{ cnt.paid_orders or 0}})</button>
+            <button class="tab-link" onclick="showTab('pending')">Pending ({{ cnt.pending_orders or 0}})</button>
+            <button class="tab-link" onclick="showTab('draft')">Overdue ({{ cnt.overdue_orders or 0}})</button>
+        </div>
+        <div class="action-buttons">
+          <!--  <a href="#" id="openInvoiceBtn" class="create-invoice">Export</a>-->
+
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Invoice ID</th>
+                    <th>Client Name</th>
+                    <th>Client Email</th>
+                    <th>Purchase Date</th>
+                    <th>Due Date</th>
+                    <th>Terms</th>
+                    <th>Months</th>
+                    <th>Balance (PHP)</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="all" class="tab-content">
+                {% for order in orders_all %}
+                <tr>
+                    <td>{{ order.inv_id }}</td>
+                    <td>{{ order.cust_name }}</td>
+                    <td>{{ order.cust_email }}</td>
+                    <td>{{ order.pur_date.strftime('%Y-%m-%d') if order.pur_date else '' }}</td>
+                    <td>{{ order.due_date.strftime('%Y-%m-%d') if order.due_date else '' }}</td>
+                    <td>{{ order.lay_away_terms }}</td>
+                    <td>{{ order.months_term }}</td>
+                    <td>{{ order.balance }}</td>
+                    <td>
+                        {% set status = 'pending' %}
+                        {% if order.balance == 0 %}
+                            {% set status = 'paid' %}
+                        {% elif current_date > order.due_date %}
+                            {% set status = 'overdue' %}
+                        {% endif %}
+                        <span class="status {{ status }}">
+                            {{ status }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="button-update" onclick="openPayFormForm('{{ order.inv_id }}')"><i class="fas fa-edit"></i></button>
+                        <button class="button-history" onclick=""><i class="fas fa-history"></i></button>
+                    </td>                
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tbody id="paid" class="tab-content" style="display:none">
+                {% for order in orders_paid %}
+                <tr>
+                    <td>{{ order.inv_id }}</td>
+                    <td>{{ order.cust_name }}</td>
+                    <td>{{ order.cust_email }}</td>
+                    <td>{{ order.pur_date.strftime('%Y-%m-%d') if order.pur_date else '' }}</td>
+                    <td>{{ order.due_date.strftime('%Y-%m-%d') if order.due_date else '' }}</td>
+                    <td>{{ order.lay_away_terms }}</td>
+                    <td>{{ order.months_term }}</td>
+                    <td>{{ order.balance }}</td>
+                    <td>
+                        {% set status = 'pending' %}
+                        {% if order.balance == 0 %}
+                            {% set status = 'paid' %}
+                        {% elif current_date > order.due_date %}
+                            {% set status = 'overdue' %}
+                        {% endif %}
+                        <span class="status {{ status }}">
+                            {{ status }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="button-update" onclick="openPayFormForm('{{ order.inv_id }}')"><i class="fas fa-edit"></i></button>
+                        <button class="button-history" onclick=""><i class="fas fa-history"></i></button>
+                    </td>    
+                </tr>             
+                    {% endfor %}
+            </tbody>
+            <tbody id="pending" class="tab-content" style="display:none">
+                {% for order in orders_pending %}
+                <tr>
+                    <td>{{ order.inv_id }}</td>
+                    <td>{{ order.cust_name }}</td>
+                    <td>{{ order.cust_email }}</td>
+                    <td>{{ order.pur_date.strftime('%Y-%m-%d') if order.pur_date else '' }}</td>
+                    <td>{{ order.due_date.strftime('%Y-%m-%d') if order.due_date else '' }}</td>
+                    <td>{{ order.lay_away_terms }}</td>
+                    <td>{{ order.months_term }}</td>
+                    <td>{{ order.balance }}</td>
+                    <td>
+                        {% set status = 'pending' %}
+                        {% if order.balance == 0 %}
+                            {% set status = 'paid' %}
+                        {% elif current_date > order.due_date %}
+                            {% set status = 'overdue' %}
+                        {% endif %}
+                        <span class="status {{ status }}">
+                            {{ status }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="button-update" onclick="openPayFormForm('{{ order.inv_id }}')"><i class="fas fa-edit"></i></button>
+                        <button class="button-history" onclick=""><i class="fas fa-history"></i></button>
+                    </td>                 
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tbody id="draft" class="tab-content" style="display:none">
+                {% for order in orders_overdue %}
+                <tr>
+                    <td>{{ order.inv_id }}</td>
+                    <td>{{ order.cust_name }}</td>
+                    <td>{{ order.cust_email }}</td>
+                    <td>{{ order.pur_date.strftime('%Y-%m-%d') if order.pur_date else '' }}</td>
+                    <td>{{ order.due_date.strftime('%Y-%m-%d') if order.due_date else '' }}</td>
+                    <td>{{ order.lay_away_terms }}</td>
+                    <td>{{ order.months_term }}</td>
+                    <td>{{ order.balance }}</td>
+                    <td>
+                        {% set status = 'pending' %}
+                        {% if order.balance == 0 %}
+                            {% set status = 'paid' %}
+                        {% elif current_date > order.due_date %}
+                            {% set status = 'overdue' %}
+                        {% endif %}
+                        <span class="status {{ status }}">
+                            {{ status }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="button-update" onclick="openPayFormForm('{{ order.inv_id }}')"><i class="fas fa-edit"></i></button>
+                        <button class="button-history" onclick=""><i class="fas fa-history"></i></button>
+                    </td>    
+                </tr>             
+                    {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination Controls -->
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('manage_invoice', page=page-1, per_page=per_page) }}" class="pagination-btn">Previous</a>
+        {% endif %}
+
+        {% if orders_all %}
+            <span class="pagination-info">Page {{ page }}</span>
+        {% endif %}
+
+        {% if orders_all|length == per_page %}
+        <a href="{{ url_for('manage_invoice', page=page+1, per_page=per_page) }}" class="pagination-btn">Next</a>
+        {% endif %}
+    </div>
+</div>
+
+
+
+    
+{% endblock %}

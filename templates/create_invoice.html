@@ -1,0 +1,346 @@
+{% extends "header.html" %}
+
+{% block title %}Create Invoice{% endblock %}
+
+{% block content %}
+
+<div id="flashPopup" class="alert alert-{{ category }}">
+    <a href="#" class="close-btn" id="closeFlashPopup">&times;</a>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div id="flashMessages" class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+</div>
+
+<h2 class="page-title">Create New Invoice</h2>
+
+<div class="table-wrapper">
+    <form method="post" action="{{ url_for('add_order') }}" id="addForm" class="form-inv">
+
+        <div class="form-row">
+            <div class="left-side">
+
+                <label>INV#</label>
+                    <input type="text" name="invoice_id" id="invoice_id" placeholder="Invoice Number" value="{{ last_id }}" class="form-control" readonly>
+
+            </div>
+
+            <div class="right-side">
+
+                <label for="date-picker-from">Invoice Date:</label>
+                <input type="date" id="date-picker-from" name="from-date-picker" value="{{ form_data.get('from-date-picker', today_date) }}" required onchange="setDueDate()">
+                <label for="date-picker-to">Due Date:</label>
+                <input type="date" id="date-picker-to" name="to-date-picker" value="{{ form_data.get('to-date-picker', today_date) }}" readonly>
+
+            </div>
+        </div>
+
+        <div class="frm-customer">
+            <div class="form-row">
+                <h3>Customer Information</h3>
+            </div>   
+            
+            <br>
+
+            <div class="form-row">
+                <div class="form-col-inv">
+                    <label>Customer Name
+                    <input type="hidden" name="selectedCustomerId" id="selectedCustomerId"  value="{{ form_data.get('cid', '') }}">
+                    <input type="text" name="customer_name" id="customer_name" placeholder="Enter Name" class="form-control" value="{{ form_data.get('customer_name', '') }}">
+                    </label>
+                </div>
+                <div class="form-col-inv">
+                    <label>Address
+                    <input type="text" name="customer_address_1" id="customer_address_1" placeholder="Address 1" class="form-control" value="{{ form_data.get('customer_address_1', '') }}">
+                    </label>
+                </div>
+                <div class="form-col-inv">
+                    <label>City
+                    <input type="text" name="customer_city" id="customer_city" placeholder="City" class="form-control" value="{{ form_data.get('customer_city', '') }}">
+                    </label>
+                </div>
+                <div class="form-col-inv">
+                    <label>Post Code
+                    <input type="text" name="customer_postcode" id="customer_postcode" placeholder="Postcode" class="form-control" value="{{ form_data.get('customer_postcode', '') }}">
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-col-inv">
+                    <label>Email
+                    <input type="email" name="customer_email" id="customer_email" placeholder="E-mail Address" class="form-control" value="{{ form_data.get('customer_email', '') }}">
+                    </label>
+                </div>
+                <div class="form-col-inv">
+                    <label>Province
+                    <input type="text" name="customer_province" id="customer_province" placeholder="Address 2" class="form-control" value="{{ form_data.get('customer_province', '') }}">
+                    </label>
+                </div>
+                <div class="form-col-inv">
+                    <label>Country
+                    <input type="text" name="customer_country" id="customer_country" placeholder="Country" class="form-control" value="{{ form_data.get('customer_country', '') }}">
+                    </label>
+                </div>
+                <div class="form-col-inv">
+                    <label>Contact Number
+                    <input type="text" name="customer_phone" id="customer_phone" placeholder="Phone Number" class="form-control" value="{{ form_data.get('customer_phone', '') }}">
+                    </label>
+                </div>
+            </div>
+
+            <button id="openCustomerBtn" class="btn btn-secondary">Existing Customer</button><br>
+
+            <h3>Other Information</h3><br>
+
+            <div class="form-row">
+                <label for="layaway-terms">Lay Away Term:
+                    <select id="layaway-terms-invoice" name="layaway-terms" onchange="updateLayawayDetails(this)" sel>
+                        <option value="Select Terms" selected>{{ form_data.get('layaway-terms', 'Select Terms') }}</option>
+                        <option value="8rageous">8rageous</option>
+                        <option value="10rageous">10rageous</option>
+                        <option value="20% 6 months">20% 6 months</option>
+                        <option value="10% 10 months">10% 10 months</option>
+                        <option value="14% 8 months">14% 8 months</option>
+                        <option value="6 months">6 months</option>
+                        <option value="20% 8 months">20% 8 months</option>
+                        <option value="10% 8 months">10% 8 months</option>
+                        <option value="10% 6 months">10% 6 months</option>
+                        <option value="10% 12 months">10% 12 months</option>
+                        <option value="20% 10 months">20% 10 months</option>
+                        <option value="12% 12 months">12% 12 months</option>
+                        <option value="6% 12 months">6% 12 months</option>
+                        <option value="20% 12 months">20% 12 months</option>
+                        <option value="8% 8 months">8% 8 months</option>
+                        <option value="11% 11 months">11% 11 months</option>
+                    </select>
+                </label>
+                <label for="months-topay">Months Term:
+                    <input type="number" id="months-topay" placeholder="Select Lay away..." name="months-topay" value="{{ form_data.get('months-topay', '') }}" required readonly>
+                </label>
+            </div>
+
+            <div class="form-row">
+                <div class="form-col-inv">
+                    <label for="payment-method">Payment Method:
+                        <select id="payment-method" value="def" name="payment-method" required onchange="updatePaymentMethodIcon(this)">
+                            <option value="def" >Select Payment Method</option>
+                            <option value="Visa" data-icon-url="{{ url_for('static', filename='images/icons/visa.png') }}">Credit Card</option>
+                            <option value="Gcash" data-icon-url="{{ url_for('static', filename='images/icons/gcash.png') }}">GCash</option>
+                            <option value="Maya" data-icon-url="{{ url_for('static', filename='images/icons/maya.png') }}">Maya</option>
+                            <option value="Bank Transfer" data-icon-url="{{ url_for('static', filename='images/icons/atm.png') }}">Bank Transfer</option>
+                            <option value="others">Others</option>
+                        </select>
+                    </label>         
+                 </div>
+                <div class="form-col-inv">
+                    <label for="other-payment-method" id="other-payment-method-label" style="display: none;">Other Payment Method:
+                        <input type="text" id="other-payment-method" name="other-payment-method" placeholder="Specify Payment Method" disabled>
+                    </label>               
+                 </div>
+            </div>
+        </div>
+
+        
+
+        <div class="table-container-inv">
+            <table id="invoice_table" class="table">
+                <thead>
+                    <tr>
+                        <th class="product-col">
+                            <h4><a href="#" id="addRowButton" class="add_row"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Product</a></h4>
+                        </th>
+                        <th>
+                            <h4>Brand</h4>
+                        </th>
+                        <th>
+                            <h4>Quantity</h4>
+                        </th>
+                        <th>
+                            <h4>Price</h4>
+                        </th>
+                        <th class="discount-col">
+                            <h4>Description</h4>
+                        </th>
+                        <th>
+                            <h4>Sub Total</h4>
+                        </th>
+                        <th>
+                            <h4>Action</h4>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceTableBody">
+                    <tr>
+                        
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="invoice_totals" class="totals-inv">
+            <div class="totals-row-inv">
+                <div class="totals-col-inv">
+                    <strong>Sub Total:</strong>
+                    <input  name="invoice_sub_total" id="hidden_sub_total" value="0.00" readonly>
+
+                </div>
+            </div>
+            <div class="totals-row-inv">
+                <div class="totals-col-inv">
+                    <strong>Down Payment:</strong>
+                    <input   name="invoice_downpayment" id="hidden_dp" value="0.00" readonly>
+
+                </div>
+            </div>
+            <div class="totals-row-inv">
+                <div class="totals-col-inv">
+                    <strong>Monthly Payment:</strong>
+                    <input   name="invoice_monthly_payment" id="hidden_mp" value="0.00" readonly>
+
+                </div>
+            </div>
+
+            <div class="totals-row-inv">
+                <div class="totals-col-inv">
+                    <strong>Total:</strong>
+                    <input  name="invoice_total" id="hidden_total_pay" value="0.00" readonly>
+
+                </div>
+            </div>
+
+
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="btn-al">
+                    <button id="openInvoiceBtn" class="btn btn-secondary">Open Invoice</button>
+                    <input id="saveInvoiceBtn" type="submit" name="action" value="Save Transaction" data-loading-text="Creating..." class="btn btn-primary">
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+
+<!-- Popup Form Customer -->
+<div id="popupFormCustomer" class="popup">
+    <div class="popup-content-invoice">
+        <span class="close-btn" id="closeCustomerBtn">&times;</span>
+        <h2>Select Customer</h2>
+        <div>
+            <div class="invoice-box" id="invoiceDetails">
+                <table id="customer_list" class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Address</th>
+                            <th>Email</th>
+                            <th>Contact</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Customer content will be populated here -->
+                    </tbody>
+                </table>
+                <!-- Pagination controls -->
+                <div id="paginationControls"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Popup Form Invoice -->
+<div id="popupFormInvoice" class="popup">
+    <div class="popup-content-invoice">
+        <div style="margin-bottom:10px;">
+            <span class="close-btn" id="closeFormBtnInvoice">&times;</span>
+        </div>
+        <div>
+            <div class="invoice-box" id="invoiceDetails">
+                <table>
+                    <!-- Existing invoice content here -->
+                    <tr class="top">
+                        <td colspan="5">
+                            <table>
+                                <tr></tr>
+                                <tr>
+                                    <td class="title">
+                                        <img src="{{ url_for('static', filename='images/invoice_logo.png') }}" alt="Company logo" style="width:70%; max-width:200px;">
+                                    </td>
+                                    <td>
+                                        Invoice #: <span id="popup_invoice_id"></span><br>
+                                        Created: <span id="popup_invoice_date"></span><br>
+                                        Due: <span id="popup_due_date"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr class="information">
+                        <td colspan="5">
+                            <table>
+                                <tr>
+                                    <td>
+                                        The Trunk Ladies<br>
+                                        Buy, Sell, Consign, Layaway, Authenticate<br>
+                                        Manila, Philippines, 1700
+                                    </td>
+                                    <td>
+                                        <span id="popup_customer_name"></span><br>
+                                        <span id="popup_customer_address"></span><br>
+                                        <span id="popup_customer_email"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr class="heading">
+                        <td>ITEM</td>
+                        <td>BRAND</td>
+                        <td>DESCRIPTION</td>
+                        <td>QUANTITY</td>
+                        <td>PRICE</td>
+                    </tr>
+                    <tbody id="popupInvoiceTableBody" class="popup-invoice-table-body"></tbody>
+                    
+                    <tr class="total">
+                        
+                        <td colspan="5">
+                            <div style="margin-top:20px;">
+                                <strong>Sub Total:</strong><br>
+                                <strong>Down Payment: </strong><br>
+                                <strong>Monthly Payment: </strong><br>
+                                <strong>Total: </strong>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="terms-and-conditions">
+                        <td colspan="5" class="align-right">
+                            <strong>Terms and Conditions:</strong><br>
+                            <p id="popup_terms_conditions">
+                                <!-- Your terms and conditions text here -->
+                                These are the terms and conditions for this invoice. Please read carefully...
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="form-row">
+                <button id="copyInvoiceBtn" class="btn btn-secondary">Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
