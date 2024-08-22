@@ -589,9 +589,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                alert("success");
                 return response.json();
-
+                
             })
             .then(data => {
                 customerTableBody.innerHTML = ''; // Clear existing rows
