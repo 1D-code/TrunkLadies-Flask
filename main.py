@@ -9,10 +9,10 @@ from datetime import datetime
 app = Flask(__name__)
 
 # Configuration
-db_user = '1d'
-db_password = 'Um114020'
-db_name = 'trunk_ladies_db'
-db_connection_name = 'trunkladies-433304:asia-east1:trunkladiesinstance'
+db_user = os.environ.get('CLOUD_SQL_USERNAME')
+db_password = os.environ.get('CLOUD_SQL_PASSWORD')
+db_name = os.environ.get('CLOUD_SQL_DATABASE_NAME')
+db_connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
 
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
 
@@ -36,7 +36,7 @@ def open_connection():
 print(db_user)
 print(db_password)
 print(db_name)
-print(db_connection_name)
+print(db_user)
 
 conn = open_connection()
 if conn:
@@ -414,4 +414,4 @@ def add_order():
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run()
