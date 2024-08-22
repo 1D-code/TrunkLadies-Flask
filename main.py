@@ -39,13 +39,14 @@ if conn:
 else:
     print("Failed to connect.")
 
-# Routes
+mysql = MySQL(app)
+
 @app.route('/')
 def home():
     if 'logged_in' in session:
         return redirect(url_for('index_page'))
     else:
-        return redirect(url_for('index_page'))
+        return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -60,12 +61,13 @@ def login():
         if conn is None:
             flash('Database connection error. Please try again later.', 'danger')
             return render_template('login.html')
-
+        
         try:
             with conn.cursor() as cursor:
                 cursor.execute("SELECT * FROM w_users WHERE tl_user = %s", (username,))
                 user = cursor.fetchone()
-            
+                cursor.close()
+
             if user and check_password_hash(user['tl_pass'], password):
                 session['logged_in'] = True
                 session['username'] = username
@@ -86,14 +88,16 @@ def logout():
     session.pop('logged_in', None)
     session.pop('username', None)
     session.pop('name', None)
-    session.pop('dp_path', None)
+    session.pop('dp_path', None) # Optionally clear the username
     return redirect(url_for('login'))
+
 
 @app.route('/dashboard')
 def index_page():
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
-    
+        return redirect(url_for('login'))  # Redirect to login if not logged in
+
+    # Retrieve user data from the session
     fullname = session.get('name')
     dp_path = session.get('dp_path')
 
@@ -106,8 +110,10 @@ def load_user():
 
 @app.route('/manage_invoice', methods=['GET', 'POST'])
 def manage_invoice():
+    
     fullname = session.get('name')
     dp_path = session.get('dp_path')
+    
     current_date = datetime.now().date()
     
     page = request.args.get('page', 1, type=int)
@@ -116,17 +122,20 @@ def manage_invoice():
     from_date = request.form.get('from-date-picker', '')
     to_date = request.form.get('to-date-picker', '')
     
+    
     if request.form.get('clear_button'):
         customer = ''
         from_date = ''
         to_date = ''
     
-    orders_all = get_orders(customer, from_date, to_date, 'all', page, per_page)
-    orders_paid = get_orders(customer, from_date, to_date, 'paid', page, per_page)
-    orders_pending = get_orders(customer, from_date, to_date, 'pending', page, per_page)
-    orders_overdue = get_orders(customer, from_date, to_date, 'overdue', page, per_page)
+    # Filter orders based on search input
+    orders_all = get_orders(customer=customer, from_date=from_date, to_date=to_date, status='all', page=page, per_page=per_page)
+    orders_paid = get_orders(customer=customer, from_date=from_date, to_date=to_date, status='paid', page=page, per_page=per_page)
+    orders_pending = get_orders(customer=customer, from_date=from_date, to_date=to_date, status='pending', page=page, per_page=per_page)
+    orders_overdue = get_orders(customer=customer, from_date=from_date, to_date=to_date, status='overdue', page=page, per_page=per_page)
 
-    total_orders = len(get_orders(customer, from_date, to_date, 'all'))
+    # Count total orders for pagination
+    total_orders = len(get_orders(customer=customer, from_date=from_date, to_date=to_date, status='all'))
     total_pages = (total_orders + per_page - 1) // per_page
 
     cnt = {
@@ -145,7 +154,6 @@ def manage_invoice():
                            orders_overdue=orders_overdue, 
                            cnt=cnt, 
                            page=page, 
-                           form_data={},
                            per_page=per_page,
                            total_pages=total_pages,
                            search_customer=customer, 
@@ -155,6 +163,7 @@ def manage_invoice():
                            user_name=fullname, 
                            dp_path=dp_path,
                            current_date=current_date)
+ 
     
 def get_orders(customer='', from_date='', to_date='', status='', page=1, per_page=10):
     query = """
@@ -232,7 +241,7 @@ def search_by_brand_code():
         return jsonify({'error': str(e)}), 500
     finally:
         conn.close()
-
+    
 @app.route('/search_by_customer', methods=['POST'])
 def search_by_customer():
     customer = request.form.get('customer-tranx')
@@ -264,12 +273,15 @@ def product_page():
 
 @app.route('/users')
 def users_page():
+    
+    #hashed_password = generate_password_hash('pass')
+    #cursor.execute("UPDATE w_users SET tl_pass = %s WHERE tl_user = %s", (hashed_password, username))
+
     return "Hello User"
 
 @app.route('/Customer')
 def customer_page():
     return "Hi Customer"
-
 
 @app.route('/create_invoice', methods=['GET', 'POST'])
 def create_invoice():
@@ -292,14 +304,18 @@ def create_invoice():
     
     return render_template('create_invoice.html', last_id=last_id,form_data={}, user_name=session.get('name'), dp_path=session.get('dp_path'))
 
-@app.route('/pay_order', methods=['POST'])
-def pay_order():
-    
-    return redirect(url_for('manage_invoice'))
+
+@app.route('/handle_form_error', methods=['POST'])
+def handle_form_error():
+    data = request.get_json()
+    flash(data['message'], 'error')
+    return jsonify({'status': 'error'}), 200
 
 @app.route('/add_order', methods=['POST'])
 def add_order():
-    # List of required fields
+    fullname = session.get('name')
+    dp_path = session.get('dp_path')
+    
     required_fields = [
         'from-date-picker', 'to-date-picker', 'customer_name', 
         'customer_address_1', 'customer_city', 'customer_postcode', 
@@ -308,17 +324,12 @@ def add_order():
         'payment-method', 'invoice_sub_total', 'invoice_downpayment', 
         'invoice_total'
     ]
-    
-    # Check for missing fields
+
     missing_fields = [field for field in required_fields if not request.form.get(field)]
     
     if missing_fields:
         flash('Please fill in all required fields.', 'error')
-        return render_template('create_invoice.html', 
-                               last_id=request.form.get('invoice_id'), 
-                               form_data=request.form, 
-                               user_name=session.get('name'), 
-                               dp_path=session.get('dp_path'))
+        return render_template('create_invoice.html', last_id=request.form.get('invoice_id'), form_data=request.form, user_name=fullname, dp_path=dp_path)
     
     # Open database connection
     conn = open_connection()
@@ -328,7 +339,7 @@ def add_order():
 
     try:
         with conn.cursor() as cursor:
-            # Extract form data
+            # Get form data
             invid = request.form.get('invoice_id')
             invdate = request.form.get('from-date-picker')
             invdue = request.form.get('to-date-picker')
@@ -346,74 +357,284 @@ def add_order():
             pay_method_others = request.form.get('other-payment-method')
             sub_total = float(request.form.get('invoice_sub_total'))
             downpayment = float(request.form.get('invoice_downpayment'))
+            monthlypayment = float(request.form.get('invoice_monthly_payment'))
             total = float(request.form.get('invoice_total'))
-            
-            # Build full address and payment method
+
+            # Combine address fields
             full_add = f"{customer_add1}, {customer_city}, {customer_province}, {customer_country}, {post_code}"
+
+            # Determine payment method
             p_method = pay_method_others if pay_method == "Others" else pay_method  
             p_status = 'Pending'
             
-            # Check if customer exists
+            # Check if the customer exists in the customers table
             cursor.execute(
                 'SELECT cid FROM customers WHERE cust_email = %s AND customer_contact = %s',
                 (customer_email, customer_phone)
             )
             res = cursor.fetchone()
-            
+
             if res is None:
-                # Insert new customer if not exists
+                # Customer does not exist, insert into customers table
                 cursor.execute(
-                    'INSERT INTO customers (cust_name, cust_address, cust_email, customer_contact) VALUES (%s, %s, %s, %s)',
+                    'INSERT INTO customers (cust_name, cust_address, cust_email, customer_contact) '
+                    'VALUES (%s, %s, %s, %s)',
                     (customer, full_add, customer_email, customer_phone)
                 )
+                # Get the last inserted customer ID
                 customer_id = cursor.lastrowid
             else:
+                # Customer exists, retrieve the customer ID
                 customer_id = res['cid']
             
-            # Insert order details
+            # Insert into orders table
             cursor.execute(
-                'INSERT INTO orders (inv_id, pur_date, due_date, cid, lay_away_terms, months_term, pay_method, total_price, dp, balance, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-                (invid, invdate, invdue, customer_id, lay_terms, months_to_pay, p_method, sub_total, downpayment, total, p_status)
+                'INSERT INTO orders (inv_id, pur_date, due_date, cid, lay_away_terms, '
+                'months_term, pay_method, total_price, monthly_price, dp, balance, status) '
+                'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                (invid, invdate, invdue, customer_id, lay_terms, months_to_pay, p_method, sub_total, 
+                 monthlypayment, downpayment, total, p_status)
             )
             
-            # Process order items
+            # Get brand details
             brand_codes = request.form.getlist('brand_code[]')
             brand_invs = request.form.getlist('brand-inv[]')
             quantities = request.form.getlist('quantity[]')
             product_prices = request.form.getlist('invoice_product_price[]')
             descriptions = request.form.getlist('desc[]')
-            
+
+            # Insert each product into the product_transactions table
             for i in range(len(brand_codes)):
                 sub_price = float(product_prices[i]) * float(quantities[i])
-                
-                # Insert product transaction details
                 cursor.execute(
-                    'INSERT INTO product_transactions (inv_id, code, brand, quantity, description, price, total_price) VALUES (%s, %s, %s, %s, %s, %s, %s)',
+                    'INSERT INTO product_transactions (inv_id, code, brand, quantity, description, price, total_price) '
+                    'VALUES (%s, %s, %s, %s, %s, %s, %s)',
                     (invid, brand_codes[i], brand_invs[i], quantities[i], descriptions[i], product_prices[i], sub_price)
                 )
-                
-                # Update product stock
+                                    
+                # Update the quantity in the products table
                 cursor.execute(
                     'UPDATE products SET stock = stock - %s WHERE code = %s',
                     (quantities[i], brand_codes[i])
                 )
-        
-        # Commit the transaction
+
+        # Commit transaction
         conn.commit()
         flash('Your order has been added successfully!', 'success')
     
-    except pymysql.MySQLError as e:
-        # Rollback in case of error
-        conn.rollback()
+    except Exception as e:
+        conn.rollback()  # Rollback in case of error
         flash(f'Error while adding order: {str(e)}', 'error')
-        print(f'Error while adding order: {str(e)}')
+        print(f'Error while adding order: {str(e)}')  # Debug output
     
     finally:
-        # Close the connection
         conn.close()
     
     return redirect(url_for('create_invoice'))
 
 
+
+@app.route('/load_invoice', methods=['POST'])
+def load_invoice():
+    try:
+        data = request.get_json()
+        inv_id = data.get('inv_id')
+
+        if not inv_id:
+            return jsonify({'error': 'Invoice ID is required'}), 400
+        
+        conn = open_connection()
+        if conn is None:
+            return jsonify({'error': 'Database connection error'}), 500
+
+        try:
+            with conn.cursor() as cur:
+                # Query the database for the invoice details
+                cur.execute("SELECT * FROM orders WHERE inv_id = %s", (inv_id,))
+                invoice = cur.fetchone()
+
+            if invoice:
+                # Return invoice data as JSON
+                return jsonify({
+                    'due_date': invoice.get('due_date', 'Not available'),  # Ensure 'due_date' is a key in the result
+                    'balance': invoice.get('balance', 'Not available'),   # Ensure 'balance' is a key in the result
+                })
+            else:
+                return jsonify({'error': 'Invoice not found'}), 404
+                
+        except Exception as e:
+            # Log and return error
+            print("Exception occurred:", str(e))
+            return jsonify({'error': 'Error retrieving invoice data'}), 500
+        
+        finally:
+            conn.close()  # Ensure connection is closed
+
+    except Exception as e:
+        # Print exception for debugging
+        print("Exception occurred:", str(e))
+        return jsonify({'error': str(e)}), 500
+
+    
+    
+
+@app.route('/pay_order', methods=['POST'])
+def pay_order():
+    
+    fullname = session.get('name')
+    dp_path = session.get('dp_path')
+    
+    required_fields = ['pay_penalty']
+
+    missing_fields = [field for field in required_fields if not request.form.get(field)]
+    
+    if missing_fields:
+        flash('Please fill in all required fields.', 'error')
+        return render_template('manage_invoice.html', last_id=request.form.get('invoice_id'), form_data=request.form,user_name=fullname, dp_path=dp_path)
+    
+    else:
+
+    # Handle unsupported media types
+        return jsonify({'status': 'error', 'message': 'Unsupported Media Type'}), 415
+
+@app.route('/get_customers', methods=['GET'])
+def get_customers():
+    try:
+        # Get the page and per_page parameters from the request arguments
+        page = int(request.args.get('page', 1))  # Default to page 1 if not provided
+        per_page = int(request.args.get('per_page', 10))  # Default to 10 results per page
+
+        # Calculate the offset for the SQL query
+        offset = (page - 1) * per_page
+
+        conn = open_connection()
+        if conn is None:
+            return jsonify({'error': 'Database connection error'}), 500
+
+        try:
+            with conn.cursor() as cur:
+                # Query the database with LIMIT and OFFSET for pagination
+                cur.execute("""
+                    SELECT cid, cust_name, cust_address, cust_email, customer_contact
+                    FROM customers
+                    LIMIT %s OFFSET %s
+                """, (per_page, offset))
+                customers = cur.fetchall()
+
+                # Count total customers for pagination metadata
+                cur.execute("SELECT COUNT(*) AS total FROM customers")
+                total_customers = cur.fetchone()['total']
+
+            # Check if data is returned
+            if not customers:
+                return jsonify({'error': 'No data found'}), 404
+
+            # Convert rows to list of dictionaries
+            customer_list = [
+                {
+                    'id': row['cid'],
+                    'name': row['cust_name'],
+                    'address': row['cust_address'],
+                    'email': row['cust_email'],
+                    'phone': row['customer_contact']
+                }
+                for row in customers
+            ]
+
+            # Create pagination metadata
+            pagination = {
+                'page': page,
+                'per_page': per_page,
+                'total_pages': (total_customers + per_page - 1) // per_page,  # Calculate total pages
+                'total_customers': total_customers
+            }
+
+            return jsonify({'customers': customer_list, 'pagination': pagination})
+
+        except Exception as e:
+            print(f"Database query error: {str(e)}")
+            return jsonify({'error': 'Error retrieving customers'}), 500
+
+        finally:
+            conn.close()  # Ensure the connection is closed
+
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/get_invoice_data', methods=['GET'])
+def get_invoice_data():
+    try:
+        invNum = request.args.get('invoiceNumber')  # Get the inv_id from query parameters
+
+        if not invNum:
+            return jsonify({'error': 'Invoice ID is missing'}), 400
+
+        # Open database connection
+        conn = open_connection()
+        if conn is None:
+            return jsonify({'error': 'Database connection error'}), 500
+
+        try:
+            with conn.cursor() as cur:
+                # Fetch product transaction data using inv_id
+                cur.execute("SELECT * FROM product_transactions WHERE inv_id = %s", (invNum,))
+                invoice_data = cur.fetchall()
+
+                # Fetch customer data using inv_id
+                cur.execute("""
+                    SELECT customers.cust_name, customers.cust_address, customers.cust_email 
+                    FROM orders 
+                    LEFT JOIN customers ON orders.cid = customers.cid 
+                    WHERE orders.inv_id = %s
+                """, (invNum,))
+                customer_data = cur.fetchone()  # Assuming there's only one customer per invoice
+
+            # Check if any invoice data was retrieved
+            if not invoice_data:
+                return jsonify({'error': 'No data found for this invoice'}), 404
+
+            # Format invoice data for the response
+            invoice_list = [
+                {
+                    'code': row['code'],
+                    'brand': row['brand'],
+                    'quantity': row['quantity'],
+                    'description': row['description'],
+                    'price': row['price']
+                }
+                for row in invoice_data
+            ]
+
+            # Check if customer data was retrieved
+            if customer_data:
+                customer_details = {
+                    'cName': customer_data['cust_name'],
+                    'cAddress': customer_data['cust_address'],
+                    'cEmail': customer_data['cust_email'],
+                }
+            else:
+                customer_details = {}
+
+            return jsonify({
+                'invoice_data': invoice_list,
+                'inv_id': invNum,
+                'customer_data': customer_details
+            })
+
+        except Exception as e:
+            return jsonify({'error': f'Database query error: {str(e)}'}), 500
+
+        finally:
+            conn.close()  # Ensure the connection is closed
+
+    except Exception as e:
+        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
+
+
+    
+    
+       
 if __name__ == '__main__':
     app.run(debug=True)
