@@ -9,10 +9,10 @@ from datetime import datetime
 app = Flask(__name__)
 
 # Configuration
-db_user = '1d'
-db_password = 'Um114020'
-db_name = 'trunk_ladies_db'
-db_connection_name = 'trunkladies-433304:asia-east1:trunkladiesinstance'
+db_user = os.environ.get('CLOUD_SQL_USERNAME')
+db_password = os.environ.get('CLOUD_SQL_PASSWORD')
+db_name = os.environ.get('CLOUD_SQL_DATABASE_NAME')
+db_connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
 
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
 
@@ -20,43 +20,31 @@ app.secret_key = 'your_secret_key'  # Replace with your actual secret key
 def open_connection():
     unix_socket = f'/cloudsql/{db_connection_name}'
     try:
-        if os.environ.get('GAE_ENV') == 'standard':
-            return pymysql.connect(
-                user=db_user,
-                password=db_password,
-                host=unix_socket,
-                database=db_name,
-                cursorclass=pymysql.cursors.DictCursor
-            )
+        return pymysql.connect(
+            user=db_user,
+            password=db_password,
+            unix_socket=unix_socket,
+            database=db_name,
+            cursorclass=pymysql.cursors.DictCursor
+        )
     except pymysql.MySQLError as e:
         print(f"Database connection error: {e}")
         return None
 
-@app.route('/test_connection')
-def test_connection():
-    conn = open_connection()
-    if conn is None:
-        return "Failed to connect to the database.", 500
-    try:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT 1")
-            result = cursor.fetchone()
-            if result:
-                return "Database connection successful!", 200
-            else:
-                return "Database connection failed.", 500
-    except pymysql.MySQLError as e:
-        return f"Database connection error: {e}", 500
-    finally:
-        conn.close()
+# Test connection
+conn = open_connection()
+if conn:
+    print("Connection successful!")
+else:
+    print("Failed to connect.")
 
 # Routes
 @app.route('/')
 def home():
     if 'logged_in' in session:
-        return redirect(url_for('test_connection'))
+        return redirect(url_for('index_page'))
     else:
-        return redirect(url_for('test_connection'))
+        return redirect(url_for('index_page'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -77,7 +65,7 @@ def login():
                 cursor.execute("SELECT * FROM w_users WHERE tl_user = %s", (username,))
                 user = cursor.fetchone()
             
-            if user : #and check_password_hash(user['tl_pass'], password)
+            if user and check_password_hash(user['tl_pass'], password):
                 session['logged_in'] = True
                 session['username'] = username
                 session['name'] = user['tl_name']
