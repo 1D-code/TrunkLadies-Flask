@@ -33,11 +33,6 @@ def open_connection():
 
 # Test connection
 
-print(db_user)
-print(db_password)
-print(db_name)
-print(db_user)
-
 conn = open_connection()
 if conn:
     print("Connection successful!")
@@ -280,7 +275,7 @@ def create_invoice():
     if conn is None:
         flash('Database connection error. Please try again later.', 'danger')
         return redirect(url_for('create_invoice'))
-    
+
     try:
         with conn.cursor() as cursor:
             cursor.execute("SELECT id FROM orders ORDER BY id DESC LIMIT 1;")
@@ -292,9 +287,14 @@ def create_invoice():
         last_id = 1
     finally:
         conn.close()
-    
-    return render_template('create_invoice.html', last_id=last_id, user_name=session.get('name'), dp_path=session.get('dp_path'))
 
+    # Pass form_data to the template
+    return render_template('create_invoice.html', 
+                           last_id=last_id, 
+                           form_data={},  # Provide an empty dictionary if no form_data is available
+                           user_name=session.get('name'), 
+                           dp_path=session.get('dp_path'))
+    
 @app.route('/add_order', methods=['POST'])
 def add_order():
     # List of required fields
@@ -414,4 +414,4 @@ def add_order():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
