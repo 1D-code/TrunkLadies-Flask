@@ -6,7 +6,7 @@ env_variables:
   CLOUD_SQL_USERNAME: '1d'
   CLOUD_SQL_Password: 'Um114020'
   CLOUD_SQL_DATABASE_NAME: 'trunk_ladies_db'
-  CLOUD_SQL_CONNECTION_NAME: '104.199.210.86'
+  CLOUD_SQL_CONNECTION_NAME: '35.194.248.133'
   MYSQL_CURSORCLASS: 'DictCursor'
   SECRET_KEY: 'your_secret_key'  # Replace with your actual secret key
 
