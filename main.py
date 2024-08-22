@@ -32,6 +32,12 @@ def open_connection():
         return None
 
 # Test connection
+
+print(db_user)
+print(db_password)
+print(db_name)
+print(db_connection_name)
+
 conn = open_connection()
 if conn:
     print("Connection successful!")
