@@ -217,7 +217,7 @@ def search_by_brand_code():
     
     try:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM Products WHERE code = %s", (brand_code,))
+            cursor.execute("SELECT * FROM products WHERE code = %s", (brand_code,))
             result = cursor.fetchone()
         
         if result:
