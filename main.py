@@ -40,7 +40,6 @@ else:
     print("Failed to connect.")
 
 # Routes
-https://trunkladies-433304.de.r.appspot.com/
 @app.route('/')
 def home():
     if 'logged_in' in session:
@@ -48,7 +47,6 @@ def home():
     else:
         return redirect(url_for('index_page'))
 
-https://trunkladies-433304.de.r.appspot.com/
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if session.get('logged_in'):
@@ -83,7 +81,6 @@ def login():
 
     return render_template('login.html')
 
-https://trunkladies-433304.de.r.appspot.com/
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
@@ -92,7 +89,6 @@ def logout():
     session.pop('dp_path', None)
     return redirect(url_for('login'))
 
-https://trunkladies-433304.de.r.appspot.com/
 @app.route('/dashboard')
 def index_page():
     if not session.get('logged_in'):
@@ -108,7 +104,6 @@ def load_user():
     g.fullname = session.get('name')
     g.dpPath = session.get('dp_path')
 
-https://trunkladies-433304.de.r.appspot.com/
 @app.route('/manage_invoice', methods=['GET', 'POST'])
 def manage_invoice():
     fullname = session.get('name')
@@ -150,6 +145,7 @@ def manage_invoice():
                            orders_overdue=orders_overdue, 
                            cnt=cnt, 
                            page=page, 
+                           form_data={},
                            per_page=per_page,
                            total_pages=total_pages,
                            search_customer=customer, 
@@ -208,7 +204,6 @@ def get_orders(customer='', from_date='', to_date='', status='', page=1, per_pag
     
     return results
 
-https://trunkladies-433304.de.r.appspot.com/
 @app.route('/search_by_brand_code', methods=['POST'])
 def search_by_brand_code():
     brand_code = request.form.get('brand_code')
@@ -238,7 +233,6 @@ def search_by_brand_code():
     finally:
         conn.close()
 
-https://trunkladies-433304.de.r.appspot.com/
 @app.route('/search_by_customer', methods=['POST'])
 def search_by_customer():
     customer = request.form.get('customer-tranx')
@@ -276,7 +270,28 @@ def users_page():
 def customer_page():
     return "Hi Customer"
 
-https://trunkladies-433304.de.r.appspot.com/
+
+@app.route('/create_invoice', methods=['GET', 'POST'])
+def create_invoice():
+    conn = open_connection()
+    if conn is None:
+        flash('Database connection error. Please try again later.', 'danger')
+        return redirect(url_for('create_invoice'))
+    
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id FROM orders ORDER BY id DESC LIMIT 1;")
+            last_id = cursor.fetchone()
+            last_id = last_id['id'] if last_id else 0
+            last_id += 1
+    except pymysql.MySQLError as e:
+        flash(f'An error occurred: {str(e)}', 'danger')
+        last_id = 1
+    finally:
+        conn.close()
+    
+    return render_template('create_invoice.html', last_id=last_id,form_data={}, user_name=session.get('name'), dp_path=session.get('dp_path'))
+
 @app.route('/add_order', methods=['POST'])
 def add_order():
     # List of required fields
