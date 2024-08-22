@@ -292,6 +292,11 @@ def create_invoice():
     
     return render_template('create_invoice.html', last_id=last_id,form_data={}, user_name=session.get('name'), dp_path=session.get('dp_path'))
 
+@app.route('/pay_order', methods=['POST'])
+def pay_order():
+    
+    return redirect(url_for('manage_invoice'))
+
 @app.route('/add_order', methods=['POST'])
 def add_order():
     # List of required fields
