@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request,session, g, redirect, url_for, flash, jsonify
 from flask_mysqldb import MySQL
+import pymssql
 import MySQLdb
+import os
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
 from datetime import datetime
@@ -12,6 +14,31 @@ app.config['MYSQL_USER'] = 'wandy'
 app.config['MYSQL_PASSWORD'] = 'Dip114020'
 app.config['MYSQL_DB'] = 'trunk_ladies'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+
+
+db_user = os.environ.get('CLOUD_SQL_USERNAME')
+db_password = os.environ.get('CLOUD_SQL_PASSWORD')
+db_name = os.environ.get('CLOUD_SQL_DATABASE_NAME')
+db_connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
+
+def open_connection():
+    unix_socket = '/cloudsql/{}'.format(db_connection_name)
+    try:
+        if os.environ.get('GAE_ENV') == 'standard':
+            conn = pymssql.connect(
+                user=db_user,
+                password=db_password,
+                host=unix_socket,
+                database=db_name,
+                cursorclass=pymssql.cursors.DictCursor
+            )
+    except pymssql.MySQLError as e:
+        print(f"Database connection error: {e}")
+        return None
+    return conn
+
+
+
 app.secret_key = 'your_secret_key'  # Required for flash messages
 
 mysql = MySQL(app)
@@ -33,7 +60,7 @@ def login():
         password = request.form['password']
 
         try:
-            cursor = mysql.connection.cursor()
+            cursor = open_connection()
             cursor.execute("SELECT * FROM w_users WHERE tl_user = %s", (username,))
             user = cursor.fetchone()
             cursor.close()
@@ -170,7 +197,7 @@ def get_orders(customer='', from_date='', to_date='', status='', page=1, per_pag
     params.extend([per_page, (page - 1) * per_page])
     
     # Execute the query and fetch results
-    with mysql.connection.cursor() as cursor:
+    with open_connection() as cursor:
         cursor.execute(query, tuple(params))
         results = cursor.fetchall()
     
@@ -183,7 +210,7 @@ def search_by_brand_code():
     if not brand_code:
         return jsonify({'error': 'Brand code is required'}), 400
 
-    cursor = mysql.connection.cursor()
+    cursor = open_connection()
     cursor.execute("SELECT * FROM Products WHERE code = %s", (brand_code,))
     result = cursor.fetchone()
     cursor.close()
@@ -204,7 +231,7 @@ def search_by_customer():
     if not customer:
         return jsonify({'error': 'Customer name is required'}), 400
 
-    cursor = mysql.connection.cursor()
+    cursor = open_connection()
     cursor.execute("SELECT * FROM orders LEFT JOIN customers ON orders.cid = customers.cid  WHERE customers.cust_name = %s", (customer,))
     
     
@@ -234,7 +261,7 @@ def customer_page():
 
 @app.route('/create_invoice', methods=['GET', 'POST'])
 def create_invoice():
-    cur = mysql.connection.cursor()
+    cur = open_connection()
     
     fullname = session.get('name')
     dp_path = session.get('dp_path')
@@ -267,140 +294,107 @@ def handle_form_error():
 
 @app.route('/add_order', methods=['POST'])
 def add_order():
-    
     fullname = session.get('name')
     dp_path = session.get('dp_path')
     
-    required_fields = ['from-date-picker', 'to-date-picker', 'customer_name', 
-                       'customer_address_1', 'customer_city', 'customer_postcode', 
-                       'customer_email', 'customer_province', 'customer_country', 
-                       'customer_phone', 'layaway-terms', 'months-topay', 
-                       'payment-method', 'invoice_sub_total', 'invoice_downpayment', 'invoice_total']
-
+    required_fields = [
+        'from-date-picker', 'to-date-picker', 'customer_name', 
+        'customer_address_1', 'customer_city', 'customer_postcode', 
+        'customer_email', 'customer_province', 'customer_country', 
+        'customer_phone', 'layaway-terms', 'months-topay', 
+        'payment-method', 'invoice_sub_total', 'invoice_downpayment', 
+        'invoice_total'
+    ]
+    
     missing_fields = [field for field in required_fields if not request.form.get(field)]
     
     if missing_fields:
         flash('Please fill in all required fields.', 'error')
-        return render_template('create_invoice.html', last_id=request.form.get('invoice_id'), form_data=request.form,user_name=fullname, dp_path=dp_path)
+        return render_template('create_invoice.html', last_id=request.form.get('invoice_id'), form_data=request.form, user_name=fullname, dp_path=dp_path)
     
-    else:
-    
-        content_type = request.content_type
-        
-        if content_type in ('application/x-www-form-urlencoded', 'multipart/form-data'):
-            try:
-                # Debugging: Print the entire form data
-                print("Form Data:", request.form)
-                
-                # Get form data
-                invid = request.form.get('invoice_id')
-                invdate = request.form.get('from-date-picker')
-                invdue = request.form.get('to-date-picker')
-                customer = request.form.get('customer_name')
-                customer_add1 = request.form.get('customer_address_1')
-                customer_city = request.form.get('customer_city')
-                post_code = request.form.get('customer_postcode')
-                customer_email = request.form.get('customer_email')
-                customer_province = request.form.get('customer_province')
-                customer_country = request.form.get('customer_country')
-                customer_phone = request.form.get('customer_phone')
-                lay_terms = request.form.get('layaway-terms')
-                months_to_pay = request.form.get('months-topay')
-                pay_method = request.form.get('payment-method')
-                pay_method_others = request.form.get('other-payment-method')
-                sub_total = request.form.get('invoice_sub_total')
-                downpayment = request.form.get('invoice_downpayment')
-                monthlypayment = request.form.get('invoice_monthly_payment')
-                total = request.form.get('invoice_total')
-
-                # Convert values to float
-                sub_total = float(sub_total)
-                downpayment = float(downpayment)
-                total = float(total)
-
-                # Combine address fields
-                full_add = f"{customer_add1}, {customer_city}, {customer_province}, {customer_country}, {post_code}"
-
-                # Determine payment method
-                p_method = pay_method_others if pay_method == "Others" else pay_method  
-                p_status = 'Pending'
-                
-                # Insert into database
-                try:
-                    with mysql.connection.cursor() as cursor:
-                        
-                        # select into customers table
-                        # Check if the customer exists in the customers table
+    if request.content_type in ('application/x-www-form-urlencoded', 'multipart/form-data'):
+        try:
+            with open_connection() as conn:
+                if conn:
+                    cursor = conn.cursor()
+                    
+                    invid = request.form.get('invoice_id')
+                    invdate = request.form.get('from-date-picker')
+                    invdue = request.form.get('to-date-picker')
+                    customer = request.form.get('customer_name')
+                    customer_add1 = request.form.get('customer_address_1')
+                    customer_city = request.form.get('customer_city')
+                    post_code = request.form.get('customer_postcode')
+                    customer_email = request.form.get('customer_email')
+                    customer_province = request.form.get('customer_province')
+                    customer_country = request.form.get('customer_country')
+                    customer_phone = request.form.get('customer_phone')
+                    lay_terms = request.form.get('layaway-terms')
+                    months_to_pay = request.form.get('months-topay')
+                    pay_method = request.form.get('payment-method')
+                    pay_method_others = request.form.get('other-payment-method')
+                    sub_total = float(request.form.get('invoice_sub_total'))
+                    downpayment = float(request.form.get('invoice_downpayment'))
+                    total = float(request.form.get('invoice_total'))
+                    
+                    full_add = f"{customer_add1}, {customer_city}, {customer_province}, {customer_country}, {post_code}"
+                    p_method = pay_method_others if pay_method == "Others" else pay_method  
+                    p_status = 'Pending'
+                    
+                    try:
                         cursor.execute(
                             'SELECT cid FROM customers WHERE cust_email = %s AND customer_contact = %s',
                             (customer_email, customer_phone)
                         )
-
                         res = cursor.fetchone()
-
+                        
                         if res is None:
-                            # Customer does not exist, insert into customers table
                             cursor.execute(
-                                'INSERT INTO customers (cust_name, cust_address, cust_email, customer_contact) '
-                                'VALUES (%s, %s, %s, %s)',
+                                'INSERT INTO customers (cust_name, cust_address, cust_email, customer_contact) VALUES (%s, %s, %s, %s)',
                                 (customer, full_add, customer_email, customer_phone)
                             )
-                            
-                            # Get the last inserted customer ID
                             customer_id = cursor.lastrowid
                         else:
-                            # Customer exists, retrieve the customer ID
                             customer_id = res['cid']
                         
-                        # Insert into orders table
                         cursor.execute(
-                            'INSERT INTO orders (inv_id, pur_date, due_date, cid, lay_away_terms, '
-                            'months_term, pay_method, total_price,monthly_price, dp, balance, status) '
-                            'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-                            (invid, invdate, invdue, customer_id, lay_terms, months_to_pay, p_method, sub_total,monthlypayment, downpayment, total, p_status)
+                            'INSERT INTO orders (inv_id, pur_date, due_date, cid, lay_away_terms, months_term, pay_method, total_price, monthly_price, dp, balance, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                            (invid, invdate, invdue, customer_id, lay_terms, months_to_pay, p_method, sub_total, monthlypayment, downpayment, total, p_status)
                         )
                         
-                        # Get brand details
-
                         brand_codes = request.form.getlist('brand_code[]')
                         brand_invs = request.form.getlist('brand-inv[]')
                         quantities = request.form.getlist('quantity[]')
                         product_prices = request.form.getlist('invoice_product_price[]')
                         descriptions = request.form.getlist('desc[]')
-
-                        # Insert each product into the products table
+                        
                         for i in range(len(brand_codes)):
-                            
                             sub_price = float(product_prices[i]) * float(quantities[i])
                             
                             cursor.execute(
-                                'INSERT INTO product_transactions (inv_id, code, brand, quantity,  description, price, total_price) '
-                                'VALUES (%s, %s, %s, %s, %s, %s, %s)',
+                                'INSERT INTO product_transactions (inv_id, code, brand, quantity, description, price, total_price) VALUES (%s, %s, %s, %s, %s, %s, %s)',
                                 (invid, brand_codes[i], brand_invs[i], quantities[i], descriptions[i], product_prices[i], sub_price)
                             )
-                                                    
-                            # Update the quantity in the products table
+                            
                             cursor.execute(
                                 'UPDATE products SET stock = stock - %s WHERE code = %s',
                                 (quantities[i], brand_codes[i])
                             )
+                        
+                        conn.commit()
+                        flash('Your order has been added successfully!', 'success')
+                    
+                    except Exception as e:
+                        conn.rollback()
+                        flash(f'Error while adding order: {str(e)}', 'error')
+                        print(f'Error while adding order: {str(e)}')
+        
+        except Exception as e:
+            flash(f'Error: {str(e)}', 'error')
+            print(f'Error: {str(e)}')
 
-                        mysql.connection.commit()
+        return redirect(url_for('create_invoice'))
 
-                    flash('Your order has been added successfully!', 'success')
-                
-                except Exception as e:
-                    mysql.connection.rollback()  # Rollback in case of error
-                    flash(f'Error while adding order: {str(e)}', 'error')
-                    print(f'Error while adding order: {str(e)}')  # Debug output
-
-            except Exception as e:
-                flash(f'Error: {str(e)}', 'error')
-                print(f'Error: {str(e)}')  # Debug output
-
-            return redirect(url_for('create_invoice'))
-
-        # Handle unsupported media types
     return jsonify({'status': 'error', 'message': 'Unsupported Media Type'}), 415
 
 @app.route('/load_invoice', methods=['POST'])
@@ -409,7 +403,7 @@ def load_invoice():
         data = request.get_json()
         inv_id = data.get('inv_id')
         
-        cur = mysql.connection.cursor()
+        cur = open_connection()
         
         # Query the database for the invoice details
         cur.execute("SELECT * FROM orders WHERE id = %s", (inv_id,))
@@ -463,7 +457,7 @@ def get_customers():
         offset = (page - 1) * per_page
 
         # Query the database with LIMIT and OFFSET for pagination
-        cur = mysql.connection.cursor()
+        cur = open_connection()
         cur.execute("""
             SELECT cid, cust_name, cust_address, cust_email, customer_contact
             FROM customers
@@ -514,7 +508,7 @@ def get_invoice_data():
             return jsonify({'error': 'Invoice ID is missing'}), 400
 
         # Fetch product transaction data using inv_id
-        cur = mysql.connection.cursor()
+        cur = open_connection()
         cur.execute("SELECT * FROM product_transactions WHERE inv_id = %s", (invNum,))
         invoice_data = cur.fetchall()
 
