@@ -1,0 +1,31 @@
+runtime: python39  # Specifies the Python runtime version
+
+instance_class: F2  # Optional: Choose the instance class for performance (F2 is a flexible instance with 2 CPUs)
+
+env_variables:
+  MYSQL_HOST: 'localhost'
+  MYSQL_USER: 'wandy'
+  MYSQL_PASSWORD: 'Dip114020'
+  MYSQL_DB: 'trunk_ladies'
+  MYSQL_CURSORCLASS: 'DictCursor'
+  SECRET_KEY: 'your_secret_key'  # Replace with your actual secret key
+
+handlers:
+  - url: /static
+    static_dir: static  # Serve static files from the "static" directory
+
+  - url: /.*
+    script: auto  # Automatically route all other URLs to your Flask application
+
+# Optional: Configuring health checks (uncomment if needed)
+# health_check:
+#   enable_health_check: True
+
+# Optional: Set the service name if you have multiple services
+# service: default
+
+# Optional: Define the resources for your app
+# resources:
+#   cpu: 2
+#   memory_gb: 2
+#   disk_size_gb: 10
