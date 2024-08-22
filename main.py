@@ -32,13 +32,31 @@ def open_connection():
         print(f"Database connection error: {e}")
         return None
 
+@app.route('/test_connection')
+def test_connection():
+    conn = open_connection()
+    if conn is None:
+        return "Failed to connect to the database.", 500
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            result = cursor.fetchone()
+            if result:
+                return "Database connection successful!", 200
+            else:
+                return "Database connection failed.", 500
+    except pymysql.MySQLError as e:
+        return f"Database connection error: {e}", 500
+    finally:
+        conn.close()
+
 # Routes
 @app.route('/')
 def home():
     if 'logged_in' in session:
-        return redirect(url_for('index_page'))
+        return redirect(url_for('test_connection'))
     else:
-        return redirect(url_for('index_page'))
+        return redirect(url_for('test_connection'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
