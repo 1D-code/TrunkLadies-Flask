@@ -1,3 +1,4 @@
+/* Default styles for larger screens */
 body {
     margin: 0;
     padding: 0;
@@ -22,7 +23,7 @@ body {
 .left-panel {
     flex: 1.5;
     padding: 50px;
-    background: linear-gradient(to right, #d69f5f, #f0b673); /* brown gradient */
+    background: linear-gradient(to right, #d69f5f, #f0b673); /* Brown gradient */
     color: white;
     display: flex;
     flex-direction: column;
@@ -88,4 +89,79 @@ body {
 
 .btn-login:hover {
     background: linear-gradient(to right, #ff65a3, #f56a79); /* Reversed pink gradient */
+}
+
+/* Styles for tablet screens (max-width: 768px) */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        width: 90%;
+        height: auto;
+    }
+
+    .left-panel, .right-panel {
+        flex: none;
+        width: 100%;
+        padding: 30px;
+    }
+
+    .left-panel h1 {
+        font-size: 28px;
+    }
+
+    .left-panel p, .right-panel h2 {
+        font-size: 18px;
+    }
+
+    .form-group input {
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    .btn-login {
+        font-size: 14px;
+        padding: 12px;
+    }
+}
+
+/* Styles for mobile screens (max-width: 480px) */
+@media (max-width: 480px) {
+    .login-container {
+        flex-direction: column;
+        width: 100%;
+        height: auto;
+    }
+
+    .left-panel, .right-panel {
+        flex: none;
+        width: 100%;
+        padding: 20px;
+    }
+
+    .left-panel h1 {
+        font-size: 24px;
+    }
+
+    .left-panel p, .right-panel h2 {
+        font-size: 16px;
+    }
+
+    .form-group input {
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    .btn-login {
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-options label, .form-options a {
+        font-size: 12px;
+    }
 }
